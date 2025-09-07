@@ -1,0 +1,38 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "epoch-protos",
+    "version": "1.0.0",
+    "description": "Protocol Buffer definitions for EpochFolio models with C++, TypeScript, and Python code generation",
+    "homepage": "https://github.com/epochlab/epoch-protos",
+    "documentation": "https://github.com/epochlab/epoch-protos#readme",
+    "license": "MIT",
+    "dependencies": [
+        {
+            "name": "protobuf",
+            "version>=": "3.21.0"
+        },
+        {
+            "name": "vcpkg-cmake",
+            "host": true
+        },
+        {
+            "name": "vcpkg-cmake-config",
+            "host": true
+        }
+    ],
+    "features": {
+        "tools": {
+            "description": "Build with protobuf compiler tools",
+            "dependencies": [
+                {
+                    "name": "protobuf",
+                    "host": true,
+                    "default-features": false,
+                    "features": [
+                        "tools"
+                    ]
+                }
+            ]
+        }
+    }
+}

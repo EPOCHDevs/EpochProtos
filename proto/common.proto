@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package epoch_folio;
+
+option go_package = "github.com/epochlab/epoch_protos/go/epoch_folio";
+option java_package = "com.epochlab.epoch_protos.epoch_folio";
+option java_outer_classname = "CommonProto";
+option csharp_namespace = "EpochLab.EpochProtos.EpochFolio";
+
+// Enum representing different categories of portfolio analysis
+enum EpochFolioCategory {
+  EPOCH_FOLIO_CATEGORY_UNSPECIFIED = 0;
+  EPOCH_FOLIO_CATEGORY_STRATEGY_BENCHMARK = 1;
+  EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS = 2;
+  EPOCH_FOLIO_CATEGORY_RETURNS_DISTRIBUTION = 3;
+  EPOCH_FOLIO_CATEGORY_POSITIONS = 4;
+  EPOCH_FOLIO_CATEGORY_TRANSACTIONS = 5;
+  EPOCH_FOLIO_CATEGORY_ROUND_TRIP = 6;
+}
+
+// Enum representing different types of dashboard widgets
+enum EpochFolioDashboardWidget {
+  EPOCH_FOLIO_DASHBOARD_WIDGET_UNSPECIFIED = 0;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_CARD = 1;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_LINES = 2;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_BAR = 3;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE = 4;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_XRANGE = 5;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM = 6;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_PIE = 7;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_HEAT_MAP = 8;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_BOX_PLOT = 9;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_AREA = 10;
+  EPOCH_FOLIO_DASHBOARD_WIDGET_COLUMN = 11;
+}
+
+// Enum representing different data types for table columns and values
+enum EpochFolioType {
+  EPOCH_FOLIO_TYPE_UNSPECIFIED = 0;
+  EPOCH_FOLIO_TYPE_STRING = 1;
+  EPOCH_FOLIO_TYPE_INTEGER = 2;
+  EPOCH_FOLIO_TYPE_DECIMAL = 3;
+  EPOCH_FOLIO_TYPE_PERCENT = 4;
+  EPOCH_FOLIO_TYPE_BOOLEAN = 5;
+  EPOCH_FOLIO_TYPE_DATE_TIME = 6;
+  EPOCH_FOLIO_TYPE_DATE = 7;
+  EPOCH_FOLIO_TYPE_DAY_DURATION = 8;
+}
+
+// Generic scalar value that can hold different types of data
+message Scalar {
+  oneof value {
+    double double_value = 1;
+    int64 int64_value = 2;
+    uint64 uint64_value = 3;
+    string string_value = 4;
+    bool bool_value = 5;
+    int64 timestamp_nanos = 6;  // For datetime values
+  }
+}
+
+// Array of scalar values for bulk data operations
+message Array {
+  repeated Scalar values = 1;
+}
+
+// Axis types for charts
+enum AxisType {
+  AXIS_TYPE_UNSPECIFIED = 0;
+  AXIS_TYPE_LINEAR = 1;
+  AXIS_TYPE_LOGARITHMIC = 2;
+  AXIS_TYPE_DATETIME = 3;
+  AXIS_TYPE_CATEGORY = 4;
+}
