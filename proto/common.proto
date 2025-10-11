@@ -1,61 +1,62 @@
 syntax = "proto3";
 
-package epoch_folio;
+package epoch_proto;
 
-option go_package = "github.com/epochlab/epoch_protos/go/epoch_folio";
-option java_package = "com.epochlab.epoch_protos.epoch_folio";
+option go_package = "github.com/epochlab/epoch_protos/go";
+option java_package = "com.epochlab.epoch_protos";
 option java_outer_classname = "CommonProto";
-option csharp_namespace = "EpochLab.EpochProtos.EpochFolio";
-
-// Enum representing different categories of portfolio analysis
-enum EpochFolioCategory {
-  EPOCH_FOLIO_CATEGORY_UNSPECIFIED = 0;
-  EPOCH_FOLIO_CATEGORY_STRATEGY_BENCHMARK = 1;
-  EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS = 2;
-  EPOCH_FOLIO_CATEGORY_RETURNS_DISTRIBUTION = 3;
-  EPOCH_FOLIO_CATEGORY_POSITIONS = 4;
-  EPOCH_FOLIO_CATEGORY_TRANSACTIONS = 5;
-  EPOCH_FOLIO_CATEGORY_ROUND_TRIP = 6;
-}
+option csharp_namespace = "EpochLab.EpochProtos.EpochProto";
 
 // Enum representing different types of dashboard widgets
 enum EpochFolioDashboardWidget {
-  EPOCH_FOLIO_DASHBOARD_WIDGET_UNSPECIFIED = 0;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_CARD = 1;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_LINES = 2;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_BAR = 3;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE = 4;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_XRANGE = 5;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM = 6;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_PIE = 7;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_HEAT_MAP = 8;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_BOX_PLOT = 9;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_AREA = 10;
-  EPOCH_FOLIO_DASHBOARD_WIDGET_COLUMN = 11;
+  WidgetUnspecified = 0;
+  WidgetCard = 1;
+  WidgetLines = 2;
+  WidgetBar = 3;
+  WidgetDataTable = 4;
+  WidgetXRange = 5;
+  WidgetHistogram = 6;
+  WidgetPie = 7;
+  WidgetHeatMap = 8;
+  WidgetBoxPlot = 9;
+  WidgetArea = 10;
+  WidgetColumn = 11;
 }
 
 // Enum representing different data types for table columns and values
 enum EpochFolioType {
-  EPOCH_FOLIO_TYPE_UNSPECIFIED = 0;
-  EPOCH_FOLIO_TYPE_STRING = 1;
-  EPOCH_FOLIO_TYPE_INTEGER = 2;
-  EPOCH_FOLIO_TYPE_DECIMAL = 3;
-  EPOCH_FOLIO_TYPE_PERCENT = 4;
-  EPOCH_FOLIO_TYPE_BOOLEAN = 5;
-  EPOCH_FOLIO_TYPE_DATE_TIME = 6;
-  EPOCH_FOLIO_TYPE_DATE = 7;
-  EPOCH_FOLIO_TYPE_DAY_DURATION = 8;
+  TypeUnspecified = 0;
+  TypeString = 1;
+  TypeInteger = 2;
+  TypeDecimal = 3;
+  TypePercent = 4;
+  TypeBoolean = 5;
+  TypeDateTime = 6;
+  TypeDate = 7;
+  TypeDayDuration = 8;
+  TypeMonetary = 9;
+  TypeDuration = 10;
 }
 
-// Generic scalar value that can hold different types of data
+// Custom null value enum to avoid importing google.protobuf.struct.proto
+enum NullValue {
+  NULL_VALUE = 0;
+}
+
+// Strongly typed values that map directly to EpochFolioType
 message Scalar {
   oneof value {
-    double double_value = 1;
-    int64 int64_value = 2;
-    uint64 uint64_value = 3;
-    string string_value = 4;
-    bool bool_value = 5;
-    int64 timestamp_nanos = 6;  // For datetime values
+    string string_value = 1;       // TypeString
+    int64 integer_value = 2;       // TypeInteger
+    double decimal_value = 3;      // TypeDecimal
+    double percent_value = 4;      // TypePercent
+    bool boolean_value = 5;        // TypeBoolean
+    int64 timestamp_ms = 6;        // TypeDateTime (UTC milliseconds)
+    int64 date_value = 7;          // TypeDate (days since epoch)
+    int32 day_duration = 8;        // TypeDayDuration
+    double monetary_value = 9;     // TypeMonetary
+    int64 duration_ms = 10;        // TypeDuration (milliseconds)
+    NullValue null_value = 11;     // Explicit null support
   }
 }
 
@@ -66,9 +67,25 @@ message Array {
 
 // Axis types for charts
 enum AxisType {
-  AXIS_TYPE_UNSPECIFIED = 0;
-  AXIS_TYPE_LINEAR = 1;
-  AXIS_TYPE_LOGARITHMIC = 2;
-  AXIS_TYPE_DATETIME = 3;
-  AXIS_TYPE_CATEGORY = 4;
+  AxisUnspecified = 0;
+  AxisLinear = 1;
+  AxisLogarithmic = 2;
+  AxisDateTime = 3;
+  AxisCategory = 4;
+}
+
+// Dash style for line charts
+enum DashStyle {
+  DashStyleUnspecified = 0;
+  Solid = 1;
+  ShortDash = 2;
+  ShortDot = 3;
+  ShortDashDot = 4;
+  ShortDashDotDot = 5;
+  Dot = 6;
+  Dash = 7;
+  LongDash = 8;
+  DashDot = 9;
+  LongDashDot = 10;
+  LongDashDotDot = 11;
 }

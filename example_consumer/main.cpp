@@ -40,9 +40,9 @@ int main() {
   // Add some sample data points
   for (int i = 0; i < 5; ++i) {
     auto *point = portfolio_line->add_data();
-    point->mutable_x()->set_double_value(i * 30.0); // Days
-    point->mutable_y()->set_double_value(i * 2.5 +
-                                         (i % 2 ? 1.0 : -0.5)); // Returns
+    point->mutable_x()->set_decimal_value(i * 30.0); // Days
+    point->mutable_y()->set_decimal_value(i * 2.5 +
+                                          (i % 2 ? 1.0 : -0.5)); // Returns
   }
 
   // Add benchmark line
@@ -51,8 +51,8 @@ int main() {
 
   for (int i = 0; i < 5; ++i) {
     auto *point = benchmark_line->add_data();
-    point->mutable_x()->set_double_value(i * 30.0);
-    point->mutable_y()->set_double_value(i * 1.8 + (i % 2 ? 0.5 : -0.2));
+    point->mutable_x()->set_decimal_value(i * 30.0);
+    point->mutable_y()->set_decimal_value(i * 1.8 + (i % 2 ? 0.5 : -0.2));
   }
 
   std::cout << "Lines Chart Data:\n";
@@ -95,13 +95,13 @@ int main() {
   // Add rows
   auto *row1 = table_data->add_rows();
   row1->add_values()->set_string_value("Total Return");
-  row1->add_values()->set_double_value(12.5);
-  row1->add_values()->set_double_value(9.8);
+  row1->add_values()->set_decimal_value(12.5);
+  row1->add_values()->set_decimal_value(9.8);
 
   auto *row2 = table_data->add_rows();
   row2->add_values()->set_string_value("Volatility");
-  row2->add_values()->set_double_value(15.2);
-  row2->add_values()->set_double_value(16.1);
+  row2->add_values()->set_decimal_value(15.2);
+  row2->add_values()->set_decimal_value(16.1);
 
   std::cout << "Summary Table: " << summary_table.title() << "\n";
   std::cout << "Columns: " << summary_table.columns_size() << "\n";
@@ -117,21 +117,23 @@ int main() {
   // Add cards
   auto *return_card = performance_cards.add_data();
   return_card->set_title("Total Return");
-  return_card->mutable_value()->set_double_value(12.5);
+  return_card->mutable_value()->set_percent_value(12.5);
   return_card->set_type(epoch_folio::EPOCH_FOLIO_TYPE_PERCENT);
   return_card->set_group(0);
 
   auto *sharpe_card = performance_cards.add_data();
   sharpe_card->set_title("Sharpe Ratio");
-  sharpe_card->mutable_value()->set_double_value(1.42);
+  sharpe_card->mutable_value()->set_decimal_value(1.42);
   sharpe_card->set_type(epoch_folio::EPOCH_FOLIO_TYPE_DECIMAL);
   sharpe_card->set_group(0);
 
   std::cout << "Performance Cards:\n";
   for (const auto &card : performance_cards.data()) {
     std::cout << "- " << card.title() << ": ";
-    if (card.value().has_double_value()) {
-      std::cout << card.value().double_value();
+    if (card.value().has_decimal_value()) {
+      std::cout << card.value().decimal_value();
+    } else if (card.value().has_percent_value()) {
+      std::cout << card.value().percent_value();
     }
     std::cout << " (group " << card.group() << ")\n";
   }

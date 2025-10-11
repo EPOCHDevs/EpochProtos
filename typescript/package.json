@@ -1,6 +1,6 @@
 {
     "name": "@epochlab/epoch-protos",
-    "version": "1.0.0",
+    "version": "2.0.8",
     "description": "TypeScript definitions generated from Protocol Buffers for EpochFolio models",
     "main": "index.js",
     "types": "index.d.ts",

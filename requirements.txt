@@ -1,0 +1,17 @@
+# EpochProtos Python Dependencies
+# Generated on Sun Sep  7 04:01:03 PM PDT 2025
+
+# Core protobuf runtime (required)
+protobuf>=4.21.0,<7.0.0
+
+# Optional: Pydantic for enhanced validation
+pydantic>=2.0.0,<3.0.0
+
+# Development dependencies (uncomment for dev environments)
+# pytest>=7.0.0
+# mypy>=1.0.0
+# black>=22.0.0
+# isort>=5.0.0
+
+# For local development, install the package with:
+# pip install -e /path/to/EpochProtos/build/generated/python

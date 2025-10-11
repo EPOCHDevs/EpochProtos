@@ -1,6 +1,10 @@
 build/
 example_consumer/build/
+typescript_package
 test/test_cpp
 test/test_python
 *.pyc
 __pycache__/
+
+.idea
+*venv

@@ -6,17 +6,24 @@
 
 int main() {
   // Test Scalar creation
-  epoch_folio::Scalar scalar;
-  scalar.set_double_value(42.5);
+  epoch_proto::Scalar scalar;
+  scalar.set_decimal_value(42.5);
 
-  std::cout << "Scalar double value: " << scalar.double_value() << std::endl;
+  std::cout << "Scalar decimal value: " << scalar.decimal_value() << std::endl;
+
+  // Test Scalar with null value
+  epoch_proto::Scalar null_scalar;
+  null_scalar.set_null_value(google::protobuf::NULL_VALUE);
+  std::cout << "Scalar null value: "
+            << (null_scalar.has_null_value() ? "NULL" : "not null")
+            << std::endl;
 
   // Test ChartDef creation
-  epoch_folio::ChartDef chart;
+  epoch_proto::ChartDef chart;
   chart.set_id("test_chart");
   chart.set_title("Test Chart");
-  chart.set_type(epoch_folio::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  chart.set_category(epoch_folio::EPOCH_FOLIO_CATEGORY_STRATEGY_BENCHMARK);
+  chart.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  chart.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_STRATEGY_BENCHMARK);
 
   std::cout << "Chart ID: " << chart.id() << std::endl;
   std::cout << "Chart Title: " << chart.title() << std::endl;
@@ -24,15 +31,15 @@ int main() {
   std::cout << "Chart Category: " << chart.category() << std::endl;
 
   // Test Point creation
-  epoch_folio::Point point;
-  point.mutable_x()->set_double_value(1.0);
-  point.mutable_y()->set_double_value(2.0);
+  epoch_proto::Point point;
+  point.mutable_x()->set_decimal_value(1.0);
+  point.mutable_y()->set_decimal_value(2.0);
 
-  std::cout << "Point X: " << point.x().double_value() << std::endl;
-  std::cout << "Point Y: " << point.y().double_value() << std::endl;
+  std::cout << "Point X: " << point.x().decimal_value() << std::endl;
+  std::cout << "Point Y: " << point.y().decimal_value() << std::endl;
 
   // Test Line creation
-  epoch_folio::Line line;
+  epoch_proto::Line line;
   line.set_name("Test Line");
   line.add_data()->CopyFrom(point);
 
@@ -40,16 +47,16 @@ int main() {
   std::cout << "Line data points: " << line.data_size() << std::endl;
 
   // Test Table creation
-  epoch_folio::Table table;
-  table.set_type(epoch_folio::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
-  table.set_category(epoch_folio::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  epoch_proto::Table table;
+  table.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
+  table.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
   table.set_title("Test Table");
 
   // Add column definition
   auto *column = table.add_columns();
   column->set_id("col1");
   column->set_name("Column 1");
-  column->set_type(epoch_folio::EPOCH_FOLIO_TYPE_STRING);
+  column->set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
 
   std::cout << "Table title: " << table.title() << std::endl;
   std::cout << "Table columns: " << table.columns_size() << std::endl;

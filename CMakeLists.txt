@@ -1,5 +1,22 @@
 cmake_minimum_required(VERSION 3.20)
-project(EpochProtos VERSION 1.0.0 LANGUAGES CXX)
+
+# Set up vcpkg integration if available
+if(DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+elseif(EXISTS "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE $ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+endif()
+
+# Enable vcpkg manifest mode if vcpkg is being used
+if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+    set(VCPKG_MANIFEST_MODE ON)
+    set(VCPKG_FEATURE_FLAGS "versions")
+    message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+else()
+    message(STATUS "vcpkg not found, using system packages")
+endif()
+
+project(EpochProtos VERSION 2.0.8 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,14 +25,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_PYTHON_PROTOS "Build Python protobuf files" ON)
 option(BUILD_TYPESCRIPT_PROTOS "Build TypeScript protobuf files" ON)
 option(INSTALL_PROTO_FILES "Install .proto source files" ON)
+option(BUNDLE_PROTOBUF_RUNTIME "Bundle protobuf runtime into C++ library (no external dependency for consumers)" OFF)
+
+# Prefer static protobuf when bundling
+if(BUNDLE_PROTOBUF_RUNTIME)
+    set(Protobuf_USE_STATIC_LIBS ON)
+endif()
 
 # Find required packages
 find_package(Protobuf REQUIRED)
 
-# PkgConfig is optional for vcpkg builds
-if(NOT VCPKG_TOOLCHAIN)
-    find_package(PkgConfig)
-endif()
+# Find PkgConfig
+find_package(PkgConfig)
 
 # Set proto source directory
 set(PROTO_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/proto)
@@ -31,19 +52,56 @@ set(PROTO_FILES
     ${PROTO_SRC_DIR}/common.proto
     ${PROTO_SRC_DIR}/chart_def.proto
     ${PROTO_SRC_DIR}/table_def.proto
+    ${PROTO_SRC_DIR}/tearsheet.proto
 )
 
-# Generate C++ files
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+# Generate C++ files using custom command (to avoid generating WKT files)
+set(PROTO_SRCS)
+set(PROTO_HDRS)
+foreach(PROTO_FILE ${PROTO_FILES})
+    get_filename_component(PROTO_NAME ${PROTO_FILE} NAME_WE)
+    set(PROTO_SRC ${CMAKE_CURRENT_BINARY_DIR}/${PROTO_NAME}.pb.cc)
+    set(PROTO_HDR ${CMAKE_CURRENT_BINARY_DIR}/${PROTO_NAME}.pb.h)
+
+    add_custom_command(
+        OUTPUT ${PROTO_SRC} ${PROTO_HDR}
+        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
+            --proto_path=${PROTO_SRC_DIR}
+            --proto_path=${Protobuf_INCLUDE_DIRS}
+            --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
+            ${PROTO_FILE}
+        DEPENDS ${PROTO_FILE}
+        COMMENT "Generating C++ protobuf files for ${PROTO_NAME}"
+        VERBATIM
+    )
+
+    list(APPEND PROTO_SRCS ${PROTO_SRC})
+    list(APPEND PROTO_HDRS ${PROTO_HDR})
+endforeach()
 
 # Create C++ library
-add_library(epoch_protos_cpp STATIC ${PROTO_SRCS} ${PROTO_HDRS})
+if(BUNDLE_PROTOBUF_RUNTIME)
+    add_library(epoch_protos_cpp SHARED ${PROTO_SRCS} ${PROTO_HDRS})
+    set_target_properties(epoch_protos_cpp PROPERTIES POSITION_INDEPENDENT_CODE ON)
+else()
+    add_library(epoch_protos_cpp STATIC ${PROTO_SRCS} ${PROTO_HDRS})
+    # Enable PIC for static library to allow linking into shared libraries
+    set_target_properties(epoch_protos_cpp PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 # Use modern CMake target-based approach
 if(TARGET protobuf::libprotobuf)
-    target_link_libraries(epoch_protos_cpp PUBLIC protobuf::libprotobuf)
+    if(BUNDLE_PROTOBUF_RUNTIME)
+        target_link_libraries(epoch_protos_cpp PRIVATE protobuf::libprotobuf)
+    else()
+        target_link_libraries(epoch_protos_cpp PUBLIC protobuf::libprotobuf)
+    endif()
 else()
-    target_link_libraries(epoch_protos_cpp PUBLIC ${Protobuf_LIBRARIES})
+    if(BUNDLE_PROTOBUF_RUNTIME)
+        target_link_libraries(epoch_protos_cpp PRIVATE ${Protobuf_LIBRARIES})
+    else()
+        target_link_libraries(epoch_protos_cpp PUBLIC ${Protobuf_LIBRARIES})
+    endif()
     target_include_directories(epoch_protos_cpp PUBLIC ${Protobuf_INCLUDE_DIRS})
 endif()
 
@@ -53,24 +111,25 @@ target_include_directories(epoch_protos_cpp PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-# Set output directory for generated files (only for local builds)
-if(NOT VCPKG_TOOLCHAIN)
-    set_target_properties(epoch_protos_cpp PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${PROTO_GENERATED_DIR}/cpp
-    )
-endif()
+# Set output directory for generated files
+set_target_properties(epoch_protos_cpp PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${PROTO_GENERATED_DIR}/cpp
+)
 
-# Add alias for consistency
+# Add aliases for consistency and cleaner naming
 add_library(EpochProtos::epoch_protos_cpp ALIAS epoch_protos_cpp)
+add_library(epoch::protos ALIAS epoch_protos_cpp)
 
 # Custom target to generate Python files (optional)
 if(BUILD_PYTHON_PROTOS)
     add_custom_target(generate_python_protos
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROTO_GENERATED_DIR}/python/epoch_protos
         COMMAND ${Protobuf_PROTOC_EXECUTABLE}
             --proto_path=${PROTO_SRC_DIR}
-            --python_out=${PROTO_GENERATED_DIR}/python
-            --pyi_out=${PROTO_GENERATED_DIR}/python
+            --python_out=${PROTO_GENERATED_DIR}/python/epoch_protos
+            --pyi_out=${PROTO_GENERATED_DIR}/python/epoch_protos
             ${PROTO_FILES}
+        COMMAND ${CMAKE_COMMAND} -E env python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/fix_python_imports.py ${PROTO_GENERATED_DIR}/python/epoch_protos
         DEPENDS ${PROTO_FILES}
         COMMENT "Generating Python protobuf files"
     )
@@ -99,10 +158,13 @@ if(BUILD_PYTHON_PROTOS AND TARGET generate_python_protos)
     add_custom_target(setup_python_package
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${CMAKE_CURRENT_SOURCE_DIR}/python/__init__.py
-            ${PROTO_GENERATED_DIR}/python/__init__.py
+            ${PROTO_GENERATED_DIR}/python/epoch_protos/__init__.py
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py
             ${PROTO_GENERATED_DIR}/python/setup.py
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/python/pyproject.toml
+            ${PROTO_GENERATED_DIR}/python/pyproject.toml
         DEPENDS generate_python_protos
         COMMENT "Setting up Python package structure"
     )
@@ -149,6 +211,7 @@ install(TARGETS epoch_protos_cpp
 )
 
 # Install generated headers
+message(STATUS "PROTO_HDRS: ${PROTO_HDRS}")
 install(FILES ${PROTO_HDRS}
     DESTINATION include/epoch_protos
 )
@@ -191,4 +254,4 @@ install(FILES
 message(STATUS "EpochProtos configuration:")
 message(STATUS "  Proto files: ${PROTO_FILES}")
 message(STATUS "  Generated directory: ${PROTO_GENERATED_DIR}")
-message(STATUS "  C++ library: epoch_protos_cpp")
+message(STATUS "  C++ library: epoch_protos_cpp (bundle protobuf: ${BUNDLE_PROTOBUF_RUNTIME})")

@@ -1,0 +1,44 @@
+name: Deploy to NPM
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  deploy-npm:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Install dependencies
+      run: |
+        npm install -g protobufjs esbuild
+        
+    - name: Build and deploy TypeScript package
+      run: |
+        chmod +x scripts/deploy_npm.sh
+        CI=true ./scripts/deploy_npm.sh
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Verify deployment
+      run: |
+        npm view @epochlab/epoch-protos version
+        echo "Package successfully published to NPM!"

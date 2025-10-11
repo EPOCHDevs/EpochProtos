@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Quick deploy script - just copy C++ headers (most common use case)
+# Usage: ./quick-deploy
+
+cd "$(dirname "$0")"
+./scripts/copy_headers_only.sh
+echo "✅ C++ headers copied to local projects!"
+
