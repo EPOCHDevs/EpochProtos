@@ -121,6 +121,7 @@ set_target_properties(epoch_protos_cpp PROPERTIES
 # Add aliases for consistency and cleaner naming
 add_library(EpochProtos::epoch_protos_cpp ALIAS epoch_protos_cpp)
 add_library(epoch::protos ALIAS epoch_protos_cpp)
+add_library(epoch::proto ALIAS epoch_protos_cpp)  # Backward compatibility
 
 # Custom target to generate Python files (optional)
 if(BUILD_PYTHON_PROTOS)
