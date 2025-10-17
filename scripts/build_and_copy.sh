@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# DEPRECATED: This script is deprecated as of EpochProtos v2.0.8+
+#
+# The recommended approach is to use CMake FetchContent or CPM to build EpochProtos from source.
+# This ensures all code is compiled with the same dependency versions, avoiding ABI mismatches.
+#
+# Example usage in your CMakeLists.txt:
+#   include(FetchContent)
+#   set(BUILD_PYTHON_PROTOS OFF CACHE BOOL "")
+#   set(BUILD_TYPESCRIPT_PROTOS OFF CACHE BOOL "")
+#   set(VCPKG_MANIFEST_MODE OFF)  # If using vcpkg in parent project
+#   FetchContent_Declare(
+#       EpochProtos
+#       GIT_REPOSITORY https://github.com/EPOCHDevs/EpochProtos.git
+#       GIT_TAG main
+#   )
+#   FetchContent_MakeAvailable(EpochProtos)
+#   target_link_libraries(your_target PRIVATE epoch::protos)
+#
+# This script remains for legacy compatibility but may be removed in future versions.
+
 # Script to build with CMake and copy generated headers and static library to local projects
 # Usage: ./build_and_copy.sh [target_path]
 

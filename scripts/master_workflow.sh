@@ -228,8 +228,12 @@ build_cpp_protos() {
 }
 
 # Function to copy C++ files to both EpochFolio and EpochDashboard
+# DEPRECATED: This function is deprecated as of EpochProtos v2.0.8+
+# Projects should use CMake FetchContent instead to avoid ABI mismatches
 copy_cpp_files() {
     log_section "Copying C++ Files to EpochFolio and EpochDashboard"
+    log_warning "DEPRECATED: C++ file copying is deprecated. Use FetchContent instead."
+    log_info "See build_and_copy.sh for recommended FetchContent usage."
 
     local epochfolio_dir="/home/adesola/EpochLab/EpochFolio/thirdparty/epoch_protos"
     local epochdashboard_dir="/home/adesola/EpochLab/EpochDashboard/cpp/thirdparty/epoch_protos"
