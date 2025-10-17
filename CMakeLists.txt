@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Set up vcpkg integration if available
-if(DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
-elseif(EXISTS "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-    set(CMAKE_TOOLCHAIN_FILE $ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
-endif()
+# Only set toolchain if we're the top-level project
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    if(DEFINED ENV{VCPKG_ROOT})
+        set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+    elseif(EXISTS "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+        set(CMAKE_TOOLCHAIN_FILE $ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+    endif()
 
-# Enable vcpkg manifest mode if vcpkg is being used
-if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
-    set(VCPKG_MANIFEST_MODE ON)
-    set(VCPKG_FEATURE_FLAGS "versions")
-    message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+    # Enable vcpkg manifest mode if vcpkg is being used
+    if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+        set(VCPKG_MANIFEST_MODE ON)
+        set(VCPKG_FEATURE_FLAGS "versions")
+        message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+    else()
+        message(STATUS "vcpkg not found, using system packages")
+    endif()
 else()
-    message(STATUS "vcpkg not found, using system packages")
+    # When included as a subdirectory, respect parent's vcpkg settings
+    message(STATUS "EpochProtos: Using parent project's vcpkg configuration")
 endif()
 
 project(EpochProtos VERSION 2.0.8 LANGUAGES CXX)
