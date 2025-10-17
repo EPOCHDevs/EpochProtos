@@ -56,19 +56,21 @@ set(PROTO_FILES
 )
 
 # Generate C++ files using custom command (to avoid generating WKT files)
+# Generate into epoch_protos/ subdirectory for easier include paths
 set(PROTO_SRCS)
 set(PROTO_HDRS)
 foreach(PROTO_FILE ${PROTO_FILES})
     get_filename_component(PROTO_NAME ${PROTO_FILE} NAME_WE)
-    set(PROTO_SRC ${CMAKE_CURRENT_BINARY_DIR}/${PROTO_NAME}.pb.cc)
-    set(PROTO_HDR ${CMAKE_CURRENT_BINARY_DIR}/${PROTO_NAME}.pb.h)
+    set(PROTO_SRC ${CMAKE_CURRENT_BINARY_DIR}/epoch_protos/${PROTO_NAME}.pb.cc)
+    set(PROTO_HDR ${CMAKE_CURRENT_BINARY_DIR}/epoch_protos/${PROTO_NAME}.pb.h)
 
     add_custom_command(
         OUTPUT ${PROTO_SRC} ${PROTO_HDR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/epoch_protos
         COMMAND ${Protobuf_PROTOC_EXECUTABLE}
             --proto_path=${PROTO_SRC_DIR}
             --proto_path=${Protobuf_INCLUDE_DIRS}
-            --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
+            --cpp_out=${CMAKE_CURRENT_BINARY_DIR}/epoch_protos
             ${PROTO_FILE}
         DEPENDS ${PROTO_FILE}
         COMMENT "Generating C++ protobuf files for ${PROTO_NAME}"
